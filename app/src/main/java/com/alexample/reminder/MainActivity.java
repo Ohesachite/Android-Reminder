@@ -19,14 +19,15 @@ public class MainActivity extends AppCompatActivity {
     public static final String EXTRA_MESSAGE = "extra_message";
     public static final String EXTRA_ARRAY = "extra_array";
     ReminderDBHandler dbHandler;
+    ListView lv;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        ListView lv = (ListView) findViewById(R.id.ree);
         dbHandler = new ReminderDBHandler(this, null, null, 1);
+        lv = (ListView) findViewById(R.id.ree);
 
         if(getIntent() != null) {
             Intent intent = getIntent();
@@ -38,11 +39,9 @@ public class MainActivity extends AppCompatActivity {
             dbHandler.addReminder(reminder);
         }
 
-        Description = dbHandler.databaseToStringArrayList();
         ReminderList = dbHandler.databaseToReminderArrayList();
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, Description);
-        lv.setAdapter(adapter);
+        updateUI();
 
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener(){
             @Override
@@ -59,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
                             Reminder rem = ReminderList.get(pos);
                             Log.i(logTag, pos + "");
                             dbHandler.deleteReminder(rem.get_date(), rem.get_time(), rem.get_description());
-                            recreate();
+                            updateUI();
                         }
                     }
                 });
@@ -81,5 +80,11 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra(EXTRA_MESSAGE, message);
         intent.putExtra(EXTRA_ARRAY, Description);
         startActivity(intent);
+    }
+
+    private void updateUI(){
+        Description = dbHandler.databaseToStringArrayList();
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, Description);
+        lv.setAdapter(adapter);
     }
 }
