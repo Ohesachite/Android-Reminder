@@ -15,9 +15,10 @@ public class MainActivity extends AppCompatActivity {
     private static final String logTag = "logTag";
     private static final String descTag = "descTag";
     private static ArrayList<String> Description = new ArrayList<String>();
+    private static ArrayList<Reminder> ReminderList = new ArrayList<Reminder>();
     public static final String EXTRA_MESSAGE = "extra_message";
     public static final String EXTRA_ARRAY = "extra_array";
-    private static boolean addingNewReminder = false;
+    ReminderDBHandler dbHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,17 +26,20 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         ListView lv = (ListView) findViewById(R.id.ree);
+        dbHandler = new ReminderDBHandler(this, null, null, 1);
 
-        if(addingNewReminder) {
+        if(getIntent() != null) {
             Intent intent = getIntent();
 
-            Description = intent.getStringArrayListExtra(EXTRA_ARRAY);
-            for (int i = 0; i < Description.size(); i++) {
-                Log.i(logTag, Description.get(i));
-            }
+            String date = intent.getStringExtra(NewReminderActivity.REMINDER_DATE);
+            String time = intent.getStringExtra(NewReminderActivity.REMINDER_TIME);
+            String desc = intent.getStringExtra(NewReminderActivity.REMINDER_DESC);
+            Reminder reminder = new Reminder(date, time, desc);
+            dbHandler.addReminder(reminder);
         }
 
-        addingNewReminder = false;
+        Description = dbHandler.databaseToStringArrayList();
+        ReminderList = dbHandler.databaseToReminderArrayList();
 
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, Description);
         lv.setAdapter(adapter);
@@ -52,9 +56,11 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onClick(DialogInterface dialog, int which){
                         if(which == 0) {
-                            Description.remove(pos);
+                            Reminder rem = ReminderList.get(pos);
+                            Log.i(logTag, pos + "");
+                            dbHandler.deleteReminder(rem.get_date(), rem.get_time(), rem.get_description());
                             recreate();
-                            }
+                        }
                     }
                 });
                 builder.show();
@@ -70,7 +76,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void setNewReminder(View v){
-        addingNewReminder = true;
         Intent intent = new Intent(this, NewReminderActivity.class);
         String message = "New Reminder!";
         intent.putExtra(EXTRA_MESSAGE, message);

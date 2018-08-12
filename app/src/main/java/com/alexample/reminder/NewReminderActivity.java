@@ -24,8 +24,10 @@ import java.util.ArrayList;
 public class NewReminderActivity extends AppCompatActivity {
 
 
-    public static final String EXTRA_ARRAY = "extra_array";
-    private ArrayList<String> Description;
+    public static final String REMINDER_DATE = "reminder_date";
+    public static final String REMINDER_TIME = "reminder_time";
+    public static final String REMINDER_DESC = "reminder_desc";
+    //private ArrayList<String> Description;
     private static String d = "Select Date";
     private static String t = "Select Time";
 
@@ -36,7 +38,7 @@ public class NewReminderActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
         String message = intent.getStringExtra(MainActivity.EXTRA_MESSAGE);
-        Description = intent.getStringArrayListExtra(MainActivity.EXTRA_ARRAY);
+        //Description = intent.getStringArrayListExtra(MainActivity.EXTRA_ARRAY);
 
         TextView textView = findViewById(R.id.textView);
         textView.setText(message);
@@ -45,10 +47,12 @@ public class NewReminderActivity extends AppCompatActivity {
     public void saveReminder(View v){
         Intent intent = new Intent(this, MainActivity.class);
         EditText descrip = (EditText) findViewById(R.id.description);
-        String DandT = "Date: " + d + " Time: " + t;
-        String des = "Description: " + descrip.getText().toString();
-        Description.add(DandT + " " + des);
-        intent.putExtra(EXTRA_ARRAY, Description);
+        String date = d;
+        String time = t;
+        String des = descrip.getText().toString();
+        intent.putExtra(REMINDER_DATE, date);
+        intent.putExtra(REMINDER_TIME, time);
+        intent.putExtra(REMINDER_DESC, des);
         startActivity(intent);
         finish();
     }

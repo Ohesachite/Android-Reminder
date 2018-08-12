@@ -5,6 +5,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.Cursor;
 import android.content.Context;
 import android.content.ContentValues;
+import android.util.Log;
 
 import java.util.ArrayList;
 
@@ -17,6 +18,7 @@ public class ReminderDBHandler extends SQLiteOpenHelper {
     public static final String COLUMN_DATE = "date";
     public static final String COLUMN_TIME = "time";
     public static final String COLUMN_DESCRIPTION = "description";
+    private static final String LOG_TAG = "log_tag";
 
     public ReminderDBHandler(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {
         super(context, DATABASE_NAME, factory, DATABASE_VERSION);
@@ -52,15 +54,39 @@ public class ReminderDBHandler extends SQLiteOpenHelper {
 
     public void deleteReminder(String date, String time, String description){
         SQLiteDatabase db = getWritableDatabase();
-        db.execSQL("DELETE FROM " + TABLE_REMINDERS + " WHERE " +
+        String query = "DELETE FROM " + TABLE_REMINDERS + " WHERE " +
                 COLUMN_DATE + "=\"" + date + "\"" +
                 " AND " + COLUMN_TIME + "=\"" + time + "\"" +
-                " AND " + COLUMN_DESCRIPTION + "=\"" + description + "\""
-        );
+                " AND " + COLUMN_DESCRIPTION + "=\"" + description + "\"";
+        Log.i(LOG_TAG, query);
+        db.execSQL(query);
+        db.close();
     }
 
     public ArrayList<String> databaseToStringArrayList(){
         ArrayList<String> list = new ArrayList<String>();
+        SQLiteDatabase db = getWritableDatabase();
+        String query = "SELECT * FROM " + TABLE_REMINDERS;
+
+        Cursor c = db.rawQuery(query, null);
+        c.moveToFirst();
+
+        while(!c.isAfterLast()){
+            if(c.getString(c.getColumnIndex("date")) != null){
+                String s = "Date: " + c.getString(c.getColumnIndex("date")) +
+                        " Time: " + c.getString(c.getColumnIndex("time")) +
+                        " Description: " + c.getString(c.getColumnIndex("description"));
+                list.add(s);
+                Log.i(LOG_TAG, s);
+            }
+            c.moveToNext();
+        }
+        db.close();
+        return list;
+    }
+
+    public ArrayList<Reminder> databaseToReminderArrayList(){
+        ArrayList<Reminder> list = new ArrayList<Reminder>();
         SQLiteDatabase db = getWritableDatabase();
         String query = "SELECT * FROM " + TABLE_REMINDERS + " WHERE 1";
 
@@ -69,11 +95,12 @@ public class ReminderDBHandler extends SQLiteOpenHelper {
 
         while(!c.isAfterLast()){
             if(c.getString(c.getColumnIndex("date")) != null){
-                list.add("Date: " + c.getString(c.getColumnIndex("date")) +
-                        " Time: " + c.getString(c.getColumnIndex("time")) +
-                        " Description: " + c.getString(c.getColumnIndex("description"))
-                );
+                list.add(new Reminder(c.getString(c.getColumnIndex("date")),
+                        c.getString(c.getColumnIndex("time")),
+                        c.getString(c.getColumnIndex("description"))
+                ));
             }
+            c.moveToNext();
         }
         db.close();
         return list;
